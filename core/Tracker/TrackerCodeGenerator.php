@@ -276,13 +276,19 @@ class TrackerCodeGenerator
             }
             
             $referrerParsed = parse_url($site_url);
+            $parsedHost = $referrerParsed['host'];
 
-            if (!isset($firstHost) && isset($referrerParsed['host'])) {
-                $firstHost = $referrerParsed['host'];
+            // Remove the "www." prefix if it exists
+            if (substr($parsedHost, 0, 4) === "www.") {
+                $parsedHost = substr($parsedHost, 4);
             }
 
-            if (isset($referrerParsed['host'])) {
-                $url = $referrerParsed['host'];
+            if (!isset($firstHost) && isset($parsedHost)) {
+                $firstHost = $parsedHost;
+            }
+
+            if (isset($parsedHost)) {
+                $url = $parsedHost;
             } else {
                 $url = '';
             }
