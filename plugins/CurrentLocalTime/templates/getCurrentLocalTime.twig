@@ -1,0 +1,73 @@
+<div class="widgetBody">
+    <div class="current-local-time-widget_title">Current local time in website's timezone</div>
+    <div id="local-time" class="current-local-time-widget_clock"></div>
+    <!-- only show server-time if local tz is different from server tz -->
+    <div id="server-time" class="current-local-time-widget_clock"></div>
+</div>
+
+<style>
+.current-local-time-widget_title {
+    font-size: 24px;
+    text-align: center;
+    margin-bottom: 10px;
+}
+.current-local-time-widget_clock {
+    font-size: 20px;
+    text-align: center;
+    padding: 5px 0;
+}
+</style>
+
+<script>
+    $(function () {
+        function formatTime(date) {
+            // Format date as 'YYYY/MM/DD HH:mm'
+            var year = date.getFullYear();
+            var month = ('0' + (date.getMonth() + 1)).slice(-2);
+            var day = ('0' + date.getDate()).slice(-2);
+            var hours = ('0' + date.getHours()).slice(-2);
+            var minutes = ('0' + date.getMinutes()).slice(-2);
+            return year + '/' + month + '/' + day + ' ' + hours + ':' + minutes;
+        }
+
+        function adjustTimezone(utcOffsetInMinutes) {
+            // Returns a new date object with adjusted time based on utcOffsetInMinutes from UTC
+            var date = new Date();
+            var utcTime = date.getTime() + (date.getTimezoneOffset() * 60000);
+            var offset = utcOffsetInMinutes * 60000;
+            var adjustedTime = utcTime - offset;
+            return new Date(adjustedTime);
+        }
+
+        function updateClock() {
+            var localDate = new Date();
+            var localTimezoneOffset = localDate.getTimezoneOffset();
+            var localTime = formatTime(localDate);
+            var timezoneOffsetFromServer = {{ timezone }};
+            var localMatchesServer = true;
+
+            if (timezoneOffsetFromServer !== undefined && localTimezoneOffset !== timezoneOffsetFromServer) {
+                localMatchesServer = false;
+                var serverTimezone = Number(timezoneOffsetFromServer);
+                var serverDate = adjustTimezone(serverTimezone);
+                var serverTime = formatTime(serverDate);
+                document.getElementById('server-time').innerHTML = 'Site time: ' + serverTime;
+            } else {
+                document.getElementById('server-time').style.display = 'none';
+            }
+
+            var localMessage = '';
+            // Only show the label for local time if it doesn't match the server.
+            if (!localMatchesServer) {
+                localMessage = 'Local time: ';
+            }
+            // Display local time
+            document.getElementById('local-time').innerHTML = localMessage + localTime;
+        }
+
+        // Run once initially
+        updateClock();
+        // Update clock every minute
+        setInterval(updateClock, 60000);
+    });
+</script>
